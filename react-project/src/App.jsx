@@ -14,9 +14,9 @@ const concertData = {
 }
 
 const availableTickets = [
-  { id: 'gen', name: 'Entrada General', price: 250, stock: 50 },
-  { id: 'vip', name: 'Entrada VIP', price: 500, stock: 30 },
-  { id: 'plat', name: 'Entrada Platino', price: 1000, stock: 20 },
+  { id: 'gen', name: 'Entrada General', price: 250, stock: 10 },
+  { id: 'vip', name: 'Entrada VIP', price: 500, stock: 10 },
+  { id: 'plat', name: 'Entrada Platino', price: 1000, stock: 5 },
 ];
 
 function App() {
@@ -61,12 +61,38 @@ function App() {
     setView('compra');
   };
 
-  const handleConfirmCompra = (userData) => {
-    console.log("Compra confirmada:", userData);
-    setCompraData(userData);
-    setView('confirmation');
+  const handleConfirmCompra = async (userData) => {
+    alert('Procesando su compra...');
+    console.log('Datos del usuario:', userData);
+
+    try {
+      const response = await fetch('http://localhost:3001/api/compra', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Error en la solicitud de compra');
+      }
+
+      const data = await response.json();
+      console.log('Respuesta del servidor:', data);
+
+      setCompraData(userData);
+      setView('confirmation');
+    } catch (error) {
+      console.error('Error al procesar compra: ', error);
+      alert('Hubo un error al procesar su compra. Por favor, intenta mas tarde.')
+    }
+  }
+
+  const handleBackToShopping = () => {
     setCart([]);
-    localStorage.setItem('compra', JSON.stringify(userData));
+    setCompraData(null);
+    setView('shopping');
   }
 
   if (view === 'selector') {
@@ -104,7 +130,7 @@ function App() {
         <Header info={concertData} />
         <Confirmation
           compraData={compraData}
-          onBack={() => setView('selector')}
+          onBack={handleBackToShopping}
         />
       </div>
     )
